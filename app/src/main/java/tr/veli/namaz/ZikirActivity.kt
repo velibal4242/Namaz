@@ -135,7 +135,7 @@ class ZikirActivity : Activity() {
         if (idx == -1) return
         val z = Zikir.ITEMS[idx]
         val t = now()
-        if (t - lastTap < maxOf(z.minGap, 80L)) return // sadece çift dokunma kaydını önler
+        if (z.minGap > 0 && t - lastTap < z.minGap) return
         lastTap = t
         Zikir.add(this, idx)
         val n = Zikir.count(this, idx)
