@@ -66,7 +66,7 @@ class MainActivity : Activity() {
             }
             today.addView(Ui.text(this, "${v.ad.padEnd(7)} ${hhmm(starts[i])}   $mark", 17f))
             if (stt == null && now() >= starts[i] && now() < ends && true) {
-                today.addView(Ui.button(this, "✓ ${v.ad} namazını kıldım", false) {
+                today.addView(Ui.typeButton(this, "✓ ${v.ad} namazını kıldım", "${v.ad} namazımı kıldım") {
                     st.mark(g.date, v, "evde")
                     Scheduler.scheduleNext(this)
                     Ui.toast(this, "Allah kabul etsin")

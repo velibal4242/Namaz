@@ -106,6 +106,52 @@ object Ui {
         return b
     }
 
+    private fun norm(s: String): String = s.lowercase(java.util.Locale("tr"))
+        .map { when (it) { 'ı' -> 'i'; 'ğ' -> 'g'; 'ü' -> 'u'; 'ş' -> 's'; 'ö' -> 'o'; 'ç' -> 'c'; 'â' -> 'a'; 'î' -> 'i'; 'û' -> 'u'; else -> it } }
+        .filter { it.isLetter() }.joinToString("")
+
+    /**
+     * Yazarak onaylanan düğme: açılan pencerede [phrase] cümlesi harf harf yazılmalı (yapıştırma kapalı).
+     */
+    fun typeButton(a: Activity, label: String, phrase: String, primary: Boolean = false, onDone: () -> Unit): Button =
+        button(a, label, primary) {
+            val box = col(a, 16)
+            box.addView(TextView(a).apply {
+                text = "Şu cümleyi yaz:\n\n\"$phrase\""
+                textSize = 18f
+                setTextColor(0xFF000000.toInt())
+            })
+            val et = EditText(a).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+                isLongClickable = false
+                setTextIsSelectable(false)
+                customSelectionActionModeCallback = object : android.view.ActionMode.Callback {
+                    override fun onCreateActionMode(m: android.view.ActionMode?, menu: android.view.Menu?) = false
+                    override fun onPrepareActionMode(m: android.view.ActionMode?, menu: android.view.Menu?) = false
+                    override fun onActionItemClicked(m: android.view.ActionMode?, item: android.view.MenuItem?) = false
+                    override fun onDestroyActionMode(m: android.view.ActionMode?) {}
+                }
+                customInsertionActionModeCallback = customSelectionActionModeCallback
+                setTextColor(0xFF000000.toInt())
+                textSize = 18f
+            }
+            box.addView(et)
+            val dlg = android.app.AlertDialog.Builder(a).setTitle(label).setView(box)
+                .setPositiveButton("Onayla", null)
+                .setNegativeButton("Vazgeç", null).create()
+            dlg.setOnShowListener {
+                dlg.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    if (norm(et.text.toString()) == norm(phrase)) {
+                        dlg.dismiss()
+                        onDone()
+                    } else {
+                        toast(a, "Cümleyi aynen yaz")
+                    }
+                }
+            }
+            dlg.show()
+        }
+
     fun card(c: Context): LinearLayout = col(c, 16).apply {
         background = GradientDrawable().apply {
             cornerRadius = dp(c, 18).toFloat()

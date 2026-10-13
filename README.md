@@ -9,11 +9,11 @@ Veli Bal için. Samsung Galaxy S26 Ultra'da test edilmek üzere.
 | Dönem | Ne olur |
 |---|---|
 | Vakit girince | Uyarı ekranı (ayet/hadis) |
-| Son 1 saate kadar | Her yarım saatte alarm; "Kıldım" ya da "Ertele" (15 sn basılı tut) ile susar, en fazla 5 dk |
+| Son 1 saate kadar | Her yarım saatte alarm; "Kıldım" ya da "Ertele" ile susar, en fazla 5 dk |
 | Son 1 saat | Her 10 dk'da 1 dk en yüksek seste alarm |
-| Son 30 dk | Vakit bitene kadar susmayan alarm; "30 saniye sustur" (15 sn basılı tut) |
+| Son 30 dk | Vakit bitene kadar susmayan alarm; "30 saniye sustur" |
 
-**Ertelemek zor, kılmak kolay:** erteleme düğmeleri 15 sn kesintisiz basılı tutmadan çalışmaz (erken bırakırsan sıfırlanır). Alarmı tamamen susturan: **"Kıldım"** ya da **camiye girmek** (8 dk kalınca camide kılındı; cuma öğlesi 35 dk). Ekrandan çıkılabilir, alarm arkada çalar.
+**Tek dokunuşla geçmek yok:** ertelemek için "Öğle namazımı birazdan kılacağım", kıldıysan "Öğle namazımı kıldım" cümlesini harf harf yazarsın (yapıştırma kapalı). Alarmı tamamen susturan: **"Kıldım"** ya da **camiye girmek** (8 dk kalınca camide kılındı; cuma öğlesi 35 dk). Ekrandan çıkılabilir, alarm arkada çalar.
 
 **Günlük zikir** (100'er): Tövbe → Lâ ilâhe illallâh → Salavat → Lâ havle → Tevhid. 18:00'de ekran gelir; kapatılırsa 5 dk, ertelenirse 30 dk sonra tekrar gelir (ikisi de 15 sn basılı tutarak) (erteleme 20:00'ye kadar). Hedef 21:00. Dokunuşlar arası bekleme yok; ses tuşlarıyla da sayılır.
 

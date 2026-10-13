@@ -78,10 +78,11 @@ class PrayLockActivity : Activity() {
         root.addView(status)
         countdown = Ui.text(this, "", 26f, Ui.TXT, bold = true, center = true)
         root.addView(countdown)
-        root.addView(Ui.button(this, "✓ Kıldım") { done("evde", "kıldım") })
+        val ad = ev.vakit.ad
+        root.addView(Ui.typeButton(this, "✓ Kıldım", "$ad namazımı kıldım", primary = true) { done("evde", "kıldım") })
         when (mode) {
-            "nudge" -> root.addView(Ui.holdButton(this, "Ertele") { done(null, "ertelendi") })
-            "final" -> root.addView(Ui.holdButton(this, "30 saniye sustur") {
+            "nudge" -> root.addView(Ui.typeButton(this, "Ertele", "$ad namazımı birazdan kılacağım") { done(null, "ertelendi") })
+            "final" -> root.addView(Ui.typeButton(this, "30 saniye sustur", "$ad namazımı birazdan kılacağım") {
                 silentUntil = now() + 30_000L
                 stopRing()
             })
