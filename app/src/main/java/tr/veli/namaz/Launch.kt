@@ -70,7 +70,7 @@ object Launch {
         st.put("aMode", m)
         show(
             c, ev.into(Intent(c, PrayLockActivity::class.java)).putExtra("endAt", endAt).putExtra("mode", m),
-            "${ev.vakit.ad} — namaza", "Alarm, camiye gidince ya da telefon seccade etiketinde durunca susar.", 11,
+            "${ev.vakit.ad} — namaza", "Kıldıysan \"Kıldım\" de; camiye girince de susar.", 11,
         )
     }
 

@@ -15,14 +15,8 @@ class AlarmReceiver : BroadcastReceiver() {
             when (ev.type) {
                 "PRE", "ALERT" -> Launch.alert(c, ev)
                 "NUDGE" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, t + 10_000L, "nudge")
-                // Seccade etiketi kayıtlı değilken sadece kapatılabilir 10 sn hatırlatma
-                "HARD", "FINAL" -> if (t < ev.end && !st.insideMosque()) {
-                    when {
-                        st.str("tagSeccade").isEmpty() -> Launch.lock(c, ev, t + 10_000L, "nudge")
-                        ev.type == "HARD" -> Launch.lock(c, ev, minOf(t + MIN, ev.end), "hard")
-                        else -> Launch.lock(c, ev, minOf(ev.end, t + 120 * MIN), "final")
-                    }
-                }
+                "HARD" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, minOf(t + MIN, ev.end), "hard")
+                "FINAL" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, minOf(ev.end, t + 120 * MIN), "final")
                 "LOCK", "RING" -> if (t < ev.end && !st.insideMosque()) {
                     Launch.lock(c, ev, minOf(t + maxOf(ev.dur, 1) * MIN, ev.end), "hard")
                 }

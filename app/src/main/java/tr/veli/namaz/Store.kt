@@ -42,7 +42,7 @@ class Store private constructor(ctx: Context) {
         }
     }
 
-    fun inSetup(): Boolean = now() < long("setupUntil")
+    fun inSetup(): Boolean = true // 24 saat bekleme kaldırıldı
 
     /** @return true: hemen uygulandı, false: 24 saat sonra uygulanacak */
     fun change(k: String, v: String, desc: String): Boolean {

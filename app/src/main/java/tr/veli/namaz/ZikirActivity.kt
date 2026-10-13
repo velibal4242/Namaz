@@ -99,13 +99,7 @@ class ZikirActivity : Activity() {
             exit()
         }
         root.addView(snoozeBtn)
-        if (!forced) root.addView(Ui.button(this, "Sonra devam ederim", false) { exit() })
-        if (forced) root.addView(Ui.emanetPanel(this) {
-            st.put("zForced", "")
-            st.putLong("zSnooze_${Zikir.today()}", now() + 24 * 60 * MIN)
-            st.log("Zikir emanet koduyla atlandı")
-            exit()
-        })
+        root.addView(Ui.button(this, "Kapat", false) { exit() })
         Ui.screen(this, root)
     }
 
@@ -126,8 +120,8 @@ class ZikirActivity : Activity() {
         snoozeBtn.visibility = if (canSnooze) android.view.View.VISIBLE else android.view.View.GONE
         info.text = when {
             !forced -> "Her dokunuşta bir kez söyle."
-            canSnooze -> "Son erteleme ${"%02d".format(Zikir.SON_ERTELEME_SAAT)}:00'e kadar. ${"%02d".format(Zikir.HEDEF_SAAT)}:00'den önce bitmeli."
-            else -> "Erteleme yok. Bitirmeden bu ekran gitmez."
+            canSnooze -> "Kapatırsan 5 dk sonra, ertelersen ${Zikir.ERTELEME_DK} dk sonra tekrar gelir. ${"%02d".format(Zikir.HEDEF_SAAT)}:00'den önce bitmeli."
+            else -> "Erteleme yok. Kapatırsan 5 dk sonra tekrar gelir."
         }
     }
 
@@ -168,13 +162,11 @@ class ZikirActivity : Activity() {
     }
 
     private fun exit() {
-        Policy.exitLock(this)
+        st.put("zForced", "")
         finish()
     }
 
-    private fun onBackLike() {
-        if (!forced || Zikir.done(this)) exit()
-    }
+    private fun onBackLike() = exit()
 
     @Deprecated("eski API")
     override fun onBackPressed() = onBackLike()
@@ -192,18 +184,4 @@ class ZikirActivity : Activity() {
         return super.onKeyDown(keyCode, event)
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (forced && !Zikir.done(this)) Policy.enterLock(this)
-    }
-
-    /** Zorunlu modda ekrandan çıkılırsa yarım saniye sonra geri gelir (namaz alarmı çalmıyorsa). */
-    override fun onStop() {
-        super.onStop()
-        if (!forced || isFinishing || Policy.isOwner(this)) return
-        val app = applicationContext
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (Zikir.shouldBounce(app)) Zikir.launch(app, true)
-        }, 500)
-    }
 }
