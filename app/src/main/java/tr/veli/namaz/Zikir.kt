@@ -108,6 +108,7 @@ object Zikir {
 
     /** Zorunlu ekranın açık olması gereken an mı? */
     fun due(c: Context): Boolean {
+        if (now() < Scheduler.START) return false
         if (done(c)) return false
         val t = now()
         return t >= startAt() && t >= snoozeUntil(c)
@@ -130,6 +131,7 @@ object Zikir {
                 cal.set(Calendar.SECOND, 0)
                 cal.timeInMillis
             }
+            t < Scheduler.START -> Scheduler.START + BASLA_SAAT * 60 * MIN
             t < startAt() -> startAt()
             t < snoozeUntil(c) -> snoozeUntil(c)
             // zorunlu dönemde ekrandan kaçıldıysa 5 dk'da bir geri gel

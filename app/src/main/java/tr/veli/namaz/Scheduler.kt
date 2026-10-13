@@ -38,6 +38,17 @@ data class Ev(val at: Long, val type: String, val vakit: Vakit, val date: String
 }
 
 object Scheduler {
+    /** Sistem 14 Ekim 2026 00:00'da (İstanbul) başlar; öncesinde alarm/zikir yok. */
+    const val START = 1791925200000L
+
+    fun at21(date: String): Long {
+        val cal = Calendar.getInstance()
+        val p = date.split("-")
+        cal.clear()
+        cal.set(p[0].toInt(), p[1].toInt() - 1, p[2].toInt(), 21, 0, 0)
+        return cal.timeInMillis
+    }
+
     val LOCKS = setOf("NUDGE", "HARD", "FINAL", "LOCK", "RING")
 
 
@@ -47,7 +58,8 @@ object Scheduler {
         Vakit.OGLE -> g.ikindi
         Vakit.IKINDI -> g.aksam
         Vakit.AKSAM -> g.yatsi
-        Vakit.YATSI -> g.yatsi + 90 * MIN
+        // Yatsı en geç 21:00; yazın yatsı geç girerse vakitten en az 45 dk sonra
+        Vakit.YATSI -> maxOf(at21(g.date), g.yatsi + 45 * MIN)
     }
 
     fun entry(g: Gun, v: Vakit): Long = when (v) {
@@ -110,7 +122,7 @@ object Scheduler {
         val st = Store.of(ctx)
         val t = now()
         return (-1..1).flatMap { events(ctx, it) }
-            .filter { it.at > t + 500 && st.status(it.date, it.vakit) == null }
+            .filter { it.at > t + 500 && it.at >= START && st.status(it.date, it.vakit) == null }
             .minByOrNull { it.at }
     }
 
