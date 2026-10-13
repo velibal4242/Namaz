@@ -1,0 +1,52 @@
+name: APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+      - name: Sürüm
+        run: |
+          if [ "${{ github.repository }}" = "velibal4242/Namaz" ] || [ "${{ github.repository }}" = "velibal4242/namaz" ]; then B=3000; else B=2000; fi
+          echo "VC=$((B + ${{ github.run_number }}))" >> $GITHUB_ENV
+      - name: İmza anahtarı
+        env:
+          KS: ${{ secrets.NAMAZ_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then echo "$KS" | base64 -d > $RUNNER_TEMP/namaz.keystore; echo "NAMAZ_KEYSTORE=$RUNNER_TEMP/namaz.keystore" >> $GITHUB_ENV; fi
+      - name: Derle
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+      - name: Adlandir
+        run: cp app/build/outputs/apk/release/app-release.apk namaz-${{ env.VC }}.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: namaz-apk
+          path: namaz-${{ env.VC }}.apk
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.repository, 'velibal4242/') && contains(github.repository, 'amaz')
+        with:
+          tag_name: v${{ env.VC }}
+          name: Namaz ${{ env.VC }}
+          files: namaz-${{ env.VC }}.apk
+      - name: APK'yi dala koy
+        if: false
+        run: |
+          mkdir out && cp namaz-${{ env.VC }}.apk out/namaz.apk
+          cd out && git init -q -b namaz-apk-out && git add namaz.apk
+          git -c user.name=ci -c user.email=ci@local commit -qm "APK ${{ env.VC }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" namaz-apk-out
