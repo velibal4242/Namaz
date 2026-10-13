@@ -62,6 +62,50 @@ object Ui {
         setOnClickListener { onClick() }
     }
 
+    /**
+     * Basılı tutunca çalışan düğme: [seconds] saniye kesintisiz basılı tutulmalı.
+     * Erken bırakılırsa sıfırlanır. Ertelemeyi bilinçli hâle getirmek için.
+     */
+    fun holdButton(c: Context, label: String, seconds: Int = 15, msg: String = "Namazı erteliyorsun", onDone: () -> Unit): Button {
+        val b = button(c, "$label  (${seconds} sn basılı tut)", false) {}
+        val h = android.os.Handler(android.os.Looper.getMainLooper())
+        var start = 0L
+        val step = object : Runnable {
+            override fun run() {
+                val left = seconds - ((now() - start) / 1000).toInt()
+                if (left <= 0) {
+                    b.text = label
+                    start = 0L
+                    try {
+                        c.getSystemService(android.os.VibratorManager::class.java).defaultVibrator
+                            .vibrate(android.os.VibrationEffect.createOneShot(150, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                    } catch (_: Exception) {
+                    }
+                    onDone()
+                    return
+                }
+                b.text = "$msg… $left"
+                h.postDelayed(this, 200)
+            }
+        }
+        b.setOnClickListener(null)
+        b.setOnTouchListener { _, e ->
+            when (e.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    start = now()
+                    h.post(step)
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    h.removeCallbacks(step)
+                    if (start != 0L) b.text = "$label  (${seconds} sn basılı tut)"
+                    start = 0L
+                }
+            }
+            true
+        }
+        return b
+    }
+
     fun card(c: Context): LinearLayout = col(c, 16).apply {
         background = GradientDrawable().apply {
             cornerRadius = dp(c, 18).toFloat()

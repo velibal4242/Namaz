@@ -14,7 +14,7 @@ class AlarmReceiver : BroadcastReceiver() {
         if (ev != null && st.status(ev.date, ev.vakit) == null) {
             when (ev.type) {
                 "PRE", "ALERT" -> Launch.alert(c, ev)
-                "NUDGE" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, t + 10_000L, "nudge")
+                "NUDGE" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, minOf(t + 5 * MIN, ev.end), "nudge")
                 "HARD" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, minOf(t + MIN, ev.end), "hard")
                 "FINAL" -> if (t < ev.end && !st.insideMosque()) Launch.lock(c, ev, minOf(ev.end, t + 120 * MIN), "final")
                 "LOCK", "RING" -> if (t < ev.end && !st.insideMosque()) {

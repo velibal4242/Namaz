@@ -94,12 +94,12 @@ class ZikirActivity : Activity() {
         card.addView(hadis)
         root.addView(card)
 
-        snoozeBtn = Ui.button(this, "${Zikir.ERTELEME_DK} dk ertele", false) {
+        snoozeBtn = Ui.holdButton(this, "${Zikir.ERTELEME_DK} dk ertele", msg = "Zikri erteliyorsun") {
             Zikir.snooze(this)
             exit()
         }
         root.addView(snoozeBtn)
-        root.addView(Ui.button(this, "Kapat", false) { exit() })
+        root.addView(Ui.holdButton(this, "Kapat", msg = "Zikri bırakıyorsun") { exit() })
         Ui.screen(this, root)
     }
 
@@ -166,7 +166,10 @@ class ZikirActivity : Activity() {
         finish()
     }
 
-    private fun onBackLike() = exit()
+    /** Geri tuşu kapatmaz; bırakmak için "Kapat"ı 15 sn basılı tutmak gerekir. */
+    private fun onBackLike() {
+        if (Zikir.done(this)) exit()
+    }
 
     @Deprecated("eski API")
     override fun onBackPressed() = onBackLike()

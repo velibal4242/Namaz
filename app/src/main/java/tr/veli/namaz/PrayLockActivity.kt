@@ -21,9 +21,9 @@ import android.widget.TextView
 
 /**
  * Namaz alarm ekranı (kilit yok).
- *  nudge: 10 sn çalar, "Kapat" ile kapanır.
+ *  nudge: "Kıldım" ya da 15 sn basılı tutarak "Ertele"ye kadar çalar (en fazla 5 dk).
  *  hard : 1 dk çalar.
- *  final: vakit sonuna kadar çalar; "30 saniye sustur".
+ *  final: vakit sonuna kadar çalar; "30 saniye sustur" (15 sn basılı tutarak).
  * Tamamen susturan: "Kıldım" ya da camiye girmek. Ekrandan çıkılabilir, alarm arkada çalmaya devam eder.
  */
 class PrayLockActivity : Activity() {
@@ -80,8 +80,8 @@ class PrayLockActivity : Activity() {
         root.addView(countdown)
         root.addView(Ui.button(this, "✓ Kıldım") { done("evde", "kıldım") })
         when (mode) {
-            "nudge" -> root.addView(Ui.button(this, "Kapat", false) { done(null, "kapatıldı") })
-            "final" -> root.addView(Ui.button(this, "30 saniye sustur", false) {
+            "nudge" -> root.addView(Ui.holdButton(this, "Ertele") { done(null, "ertelendi") })
+            "final" -> root.addView(Ui.holdButton(this, "30 saniye sustur") {
                 silentUntil = now() + 30_000L
                 stopRing()
             })
