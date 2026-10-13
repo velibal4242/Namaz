@@ -75,6 +75,8 @@ object Updater {
         val pi = c.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
         params.setAppPackageName(c.packageName)
+        // Android 12+: uygulama kendi yükleyicisiyse (ilk kendi güncellemesinden sonra) onay sormadan kurar
+        params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
         val id = pi.createSession(params)
         pi.openSession(id).use { session ->
             val conn = URL(url).openConnection() as HttpURLConnection
@@ -103,9 +105,24 @@ class UpdateReceiver : BroadcastReceiver() {
             val confirm = i.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
             if (confirm != null) {
                 confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                Launch.channels(c)
+                val pi = android.app.PendingIntent.getActivity(
+                    c, 8, confirm,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
+                )
+                val n = android.app.Notification.Builder(c, Launch.CH_TAKIP)
+                    .setSmallIcon(R.drawable.ic_stat)
+                    .setContentTitle("Namaz: yeni sürüm hazır")
+                    .setContentText("Yüklemek için dokun")
+                    .setContentIntent(pi)
+                    .setAutoCancel(true)
+                    .build()
+                c.getSystemService(android.app.NotificationManager::class.java).notify(9, n)
                 try { c.startActivity(confirm) } catch (_: Exception) {}
             }
-        } else if (status != PackageInstaller.STATUS_SUCCESS) {
+        } else if (status == PackageInstaller.STATUS_SUCCESS) {
+            Store.of(c).log("Güncelleme kuruldu")
+        } else {
             Store.of(c).log("Güncelleme başarısız: " + (i.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: status.toString()))
         }
     }
