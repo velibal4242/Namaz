@@ -73,6 +73,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".IlacReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".ZikirReceiver"
             android:exported="false" />
 

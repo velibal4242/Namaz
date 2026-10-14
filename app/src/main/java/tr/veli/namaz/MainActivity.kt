@@ -77,6 +77,36 @@ class MainActivity : Activity() {
         today.addView(Ui.text(this, "Güneş ${hhmm(g.gunes)}", 14f, Ui.DIM))
         root.addView(today)
 
+        // İlaçlar
+        val il = Ui.card(this)
+        il.addView(Ui.text(this, "İlaçlar", 18f, Ui.GOLD, bold = true))
+        val meds = Ilac.all(this)
+        if (meds.isEmpty()) il.addView(Ui.text(this, "Henüz ilaç eklenmedi.", 14f, Ui.DIM))
+        val dueIds = Ilac.due(this).associate { it.first.id to it.second }
+        meds.forEach { m ->
+            val at = Ilac.todayAt(m)
+            val mark = when {
+                Ilac.taken(this, m, at) -> "✅"
+                now() >= at -> "⏰"
+                else -> "⏳"
+            }
+            il.addView(Ui.text(this, "$mark ${m.saat}  ${m.ad} ${m.doz}", 16f))
+            dueIds[m.id]?.let { doseAt ->
+                il.addView(Ui.button(this, "✓ ${m.ad} aldım", false) {
+                    Ilac.markTaken(this, m.id, doseAt)
+                    render()
+                })
+            }
+        }
+        il.addView(Ui.button(this, "İlaç ekle", false) { addMed() })
+        if (meds.isNotEmpty()) il.addView(Ui.button(this, "İlaç sil", false) {
+            AlertDialog.Builder(this).setTitle("Hangi ilaç silinsin?")
+                .setItems(meds.map { "${it.saat}  ${it.ad} ${it.doz}" }.toTypedArray()) { _, i ->
+                    Ilac.remove(this, meds[i].id); render()
+                }.show()
+        })
+        root.addView(il)
+
         // Zikir
         val zk = Ui.card(this)
         zk.addView(Ui.text(this, "Günlük zikir", 18f, Ui.GOLD, bold = true))
@@ -219,6 +249,20 @@ class MainActivity : Activity() {
     }
 
     private fun refreshLocation() = currentLocation { }
+
+    private fun addMed() {
+        input("İlacın adı", "", InputType.TYPE_CLASS_TEXT) { ad ->
+            if (ad.isBlank()) return@input
+            input("Doz (örn. 10 mg, 1 tablet)", "", InputType.TYPE_CLASS_TEXT) { doz ->
+                val cal = java.util.Calendar.getInstance()
+                android.app.TimePickerDialog(this, { _, h, m ->
+                    Ilac.add(this, ad, doz, "%02d:%02d".format(h, m))
+                    Ui.toast(this, "Eklendi. Aynı ilacı günde birkaç kez alıyorsan her saat için ayrı ekle.")
+                    render()
+                }, cal.get(java.util.Calendar.HOUR_OF_DAY), 0, true).show()
+            }
+        }
+    }
 
     /** Bulunduğun yeri cami olarak ekle. */
     private fun addMosque() {

@@ -17,6 +17,8 @@ Veli Bal için. Samsung Galaxy S26 Ultra'da test edilmek üzere.
 
 **Günlük zikir** (100'er): Tövbe → Lâ ilâhe illallâh → Salavat → Lâ havle → Tevhid. 18:00'de ekran gelir; kapatılırsa 5 dk, ertelenirse 30 dk sonra tekrar gelir (ikisi de 15 sn basılı tutarak) (erteleme 20:00'ye kadar). Hedef 21:00. Dokunuşlar arası bekleme yok; ses tuşlarıyla da sayılır.
 
+**İlaç takibi:** ana ekrandan ilaç, doz ve saat eklenir (bilgiler sadece telefonda). Doz saatinde sesli bildirim + "Aldım"; alınmazsa her saat tekrar (en fazla 12 saat, 00:00–07:00 sessiz).
+
 * Her uyarıda farklı ayet / hadis (82 içerik).
 * Camiler: Aksaray ve Konya illeri + İnegöl ilçesi (OpenStreetMap); eksik camini "Bulunduğum yeri cami olarak ekle" ile eklersin.
 
