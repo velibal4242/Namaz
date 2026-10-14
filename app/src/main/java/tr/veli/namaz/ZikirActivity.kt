@@ -120,7 +120,7 @@ class ZikirActivity : Activity() {
         snoozeBtn.visibility = if (canSnooze) android.view.View.VISIBLE else android.view.View.GONE
         info.text = when {
             !forced -> "Her dokunuşta bir kez söyle."
-            canSnooze -> "Kapatırsan 5 dk sonra, ertelersen ${Zikir.ERTELEME_DK} dk sonra tekrar gelir. ${"%02d".format(Zikir.HEDEF_SAAT)}:00'den önce bitmeli."
+            canSnooze -> "Kapatırsan 5 dk sonra, ertelersen ${Zikir.ERTELEME_DK} dk sonra tekrar gelir. ${Zikir.HEDEF}'dan önce bitmeli."
             else -> "Erteleme yok. Kapatırsan 5 dk sonra tekrar gelir."
         }
     }

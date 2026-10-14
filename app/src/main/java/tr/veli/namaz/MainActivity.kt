@@ -117,7 +117,7 @@ class MainActivity : Activity() {
         if (Zikir.done(this)) {
             zk.addView(Ui.text(this, "Bugün tamam. Allah kabul etsin.", 14f, Ui.DIM))
         } else {
-            zk.addView(Ui.text(this, "${"%02d".format(Zikir.BASLA_SAAT)}:00'de ekran gelir; ${Zikir.ERTELEME_DK} dk ertelenebilir, en geç ${"%02d".format(Zikir.SON_ERTELEME_SAAT)}:00. ${"%02d".format(Zikir.HEDEF_SAAT)}:00'den önce bitmeli.", 13f, Ui.DIM))
+            zk.addView(Ui.text(this, "${"%02d".format(Zikir.BASLA_SAAT)}:00'de ekran gelir; ${Zikir.ERTELEME_DK} dk ertelenebilir, en geç ${"%02d".format(Zikir.SON_ERTELEME_SAAT)}:00. ${Zikir.HEDEF}'dan önce bitmeli.", 13f, Ui.DIM))
             zk.addView(Ui.button(this, "Zikre başla / devam et") { Zikir.launch(this, false) })
         }
         root.addView(zk)

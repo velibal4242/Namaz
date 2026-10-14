@@ -25,9 +25,9 @@ data class ZikirItem(
  *  - İlerleme kaydedilir; gün içinde istediğin zaman ana ekrandan başlayabilirsin.
  */
 object Zikir {
-    const val BASLA_SAAT = 18
-    const val SON_ERTELEME_SAAT = 20
-    const val HEDEF_SAAT = 21
+    const val BASLA_SAAT = 8
+    const val SON_ERTELEME_SAAT = 21
+    const val HEDEF = "21:30"
     const val ERTELEME_DK = 30
 
     val ITEMS = listOf(
