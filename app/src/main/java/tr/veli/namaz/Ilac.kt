@@ -40,7 +40,10 @@ object Ilac {
     }
 
     fun add(c: Context, ad: String, doz: String, saat: String) {
-        save(c, all(c) + Med(now().toString(36), ad.trim(), doz.trim(), saat))
+        val st = Store.of(c)
+        val n = st.long("medSeq") + 1
+        st.putLong("medSeq", n)
+        save(c, all(c) + Med("m$n", ad.trim(), doz.trim(), saat))
         Store.of(c).log("İlaç eklendi: $ad $saat")
     }
 
@@ -77,7 +80,7 @@ object Ilac {
     fun due(c: Context): List<Pair<Med, Long>> {
         val t = now()
         return all(c).flatMap { m -> listOf(-1, 0).map { m to timeOn(m.saat, it) } }
-            .filter { (m, at) -> at <= t && t < at + REPEAT_H * 60 * MIN && !taken(c, m, at) }
+            .filter { (m, at) -> at <= t + 1000 && t < at + REPEAT_H * 60 * MIN && !taken(c, m, at) }
     }
 
     /** Bugünkü doz zamanı (ana ekran için) */
@@ -97,12 +100,16 @@ object Ilac {
                 val at = timeOn(m.saat, d)
                 if (taken(c, m, at)) continue
                 // doz anı + her saat tekrar
+                var found = false
                 for (k in 0 until REPEAT_H) {
                     val x = at + k * 60 * MIN
                     if (x > t + 1000 && !quiet(x)) {
-                        cands.add(x); break
+                        cands.add(x); found = true; break
                     }
                 }
+                // pencere kapanınca bildirimi temizlemek için
+                val close = at + REPEAT_H * 60 * MIN
+                if (!found && close > t + 1000) cands.add(close)
             }
         }
         val am = c.getSystemService(AlarmManager::class.java)
@@ -122,7 +129,7 @@ object Ilac {
         }
     }
 
-    fun notifId(id: String) = 5000 + (id.hashCode() and 0xFFF)
+    fun notifId(id: String) = 5000 + ((id.removePrefix("m").toIntOrNull() ?: (id.hashCode() and 0x3FF)) % 4000) * 2
 
     fun notify(c: Context) {
         if (quiet(now())) return
@@ -133,7 +140,15 @@ object Ilac {
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             },
         )
-        for ((m, at) in due(c)) {
+        val dueNow = due(c)
+        // Penceresi dolan ya da artık beklemeyen ilaçların bildirimini kaldır
+        all(c).filter { m -> dueNow.none { it.first.id == m.id } }.forEach { nm.cancel(notifId(it.id)) }
+        val st = Store.of(c)
+        for ((m, at) in dueNow) {
+            // Her ilaç en fazla ~saatte bir uyarır (başka ilacın alarmı onu sıklaştırmasın)
+            val lastKey = key(m, at) + "_n"
+            if (now() - st.long(lastKey) < 50 * MIN) continue
+            st.putLong(lastKey, now())
             val took = Intent(c, IlacReceiver::class.java).setAction("tr.veli.namaz.ILAC_ALDIM")
                 .putExtra("id", m.id).putExtra("at", at)
             val tookPi = PendingIntent.getBroadcast(
@@ -149,7 +164,6 @@ object Ilac {
                 .setContentText(if (late <= 0) "İlaç saati (${m.saat})" else "Henüz almadın — ${m.saat} dozu, $late saat geçti")
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setContentIntent(open)
-                .setOngoing(true)
                 .addAction(Notification.Action.Builder(null, "Aldım", tookPi).build())
                 .build()
             nm.notify(notifId(m.id), n)
