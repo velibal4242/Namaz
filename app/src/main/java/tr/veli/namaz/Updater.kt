@@ -29,13 +29,29 @@ object Updater {
         check(c) { }
     }
 
-    fun check(c: Context, done: (String) -> Unit) {
+    /** İndirme sürüyor mu (aynı anda ikinci oturum açılmasın) */
+    @Volatile var busy = false
+    /** Android'in "Yükle" onay ekranı; ön plandaki ekrandan açılır (arka plandan açılamayabiliyor) */
+    @Volatile var confirm: Intent? = null
+    @Volatile var lastError: String? = null
+
+    /**
+     * force=false: aynı sürüm son 15 dakikada indirildiyse tekrar indirmez (döngüyü önler).
+     * force=true: kullanıcı "Tekrar indir" dediğinde.
+     */
+    fun check(c: Context, force: Boolean = false, done: (String) -> Unit) {
         val repo = repo(c)
         if (repo.isEmpty()) {
             done("Güncelleme deposu ayarlı değil")
             return
         }
+        if (busy) {
+            done("Sürüm indiriliyor…")
+            return
+        }
+        busy = true
         Thread {
+            val st = Store.of(c)
             val msg = try {
                 val json = get("https://api.github.com/repos/$repo/releases/latest")
                 val o = JSONObject(json)
@@ -46,17 +62,30 @@ object Updater {
                     val a = assets.getJSONObject(i)
                     if (a.getString("name").endsWith(".apk")) url = a.getString("browser_download_url")
                 }
+                val cur = currentVersion(c)
                 when {
                     url == null -> "Sürümde APK yok"
-                    tag <= currentVersion(c) -> "Güncel (sürüm ${currentVersion(c)})"
+                    tag <= cur -> {
+                        confirm = null
+                        lastError = null
+                        "Güncel (sürüm $cur)"
+                    }
+                    !force && st.long("updTag") == tag && now() - st.long("updAt") < 15 * MIN ->
+                        "Sürüm $tag hazır (yüklü: $cur)"
                     else -> {
+                        confirm = null
+                        lastError = null
+                        st.putLong("updTag", tag)
+                        st.putLong("updAt", now())
                         install(c, url)
-                        Store.of(c).log("Güncelleme kuruluyor: sürüm $tag")
-                        "Sürüm $tag kuruluyor…"
+                        st.log("Güncelleme indirildi: sürüm $tag (yüklü $cur)")
+                        "Sürüm $tag hazır (yüklü: $cur)"
                     }
                 }
             } catch (e: Exception) {
                 "Güncelleme kontrol edilemedi: ${e.message}"
+            } finally {
+                busy = false
             }
             done(msg)
         }.start()
@@ -77,6 +106,10 @@ object Updater {
         params.setAppPackageName(c.packageName)
         // Android 12+: uygulama kendi yükleyicisiyse (ilk kendi güncellemesinden sonra) onay sormadan kurar
         params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+        // Yarım kalmış eski oturumları temizle
+        for (old in pi.mySessions) {
+            try { pi.abandonSession(old.sessionId) } catch (_: Exception) {}
+        }
         val id = pi.createSession(params)
         pi.openSession(id).use { session ->
             val conn = URL(url).openConnection() as HttpURLConnection
@@ -105,6 +138,7 @@ class UpdateReceiver : BroadcastReceiver() {
             val confirm = i.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
             if (confirm != null) {
                 confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                Updater.confirm = confirm
                 Launch.channels(c)
                 val pi = android.app.PendingIntent.getActivity(
                     c, 8, confirm,
@@ -121,9 +155,15 @@ class UpdateReceiver : BroadcastReceiver() {
                 try { c.startActivity(confirm) } catch (_: Exception) {}
             }
         } else if (status == PackageInstaller.STATUS_SUCCESS) {
+            Updater.confirm = null
             Store.of(c).log("Güncelleme kuruldu")
         } else {
-            Store.of(c).log("Güncelleme başarısız: " + (i.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: status.toString()))
+            Updater.confirm = null
+            val err = if (status == PackageInstaller.STATUS_FAILURE_ABORTED) "Yükleme iptal edildi"
+            else (i.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: "kod $status")
+            Updater.lastError = err
+            Store.of(c).log("Güncelleme başarısız: $err")
+            c.getSystemService(android.app.NotificationManager::class.java).cancel(9)
         }
     }
 }

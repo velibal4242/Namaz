@@ -219,7 +219,7 @@ class MainActivity : Activity() {
 
         c.addView(Ui.text(this, "Sürüm ${Updater.currentVersion(this)} · güncellemeler otomatik (6 saatte bir kontrol)", 13f, Ui.DIM))
         c.addView(Ui.button(this, "Güncellemeyi şimdi kontrol et", false) {
-            Updater.check(this) { msg -> runOnUiThread { Ui.toast(this, msg) } }
+            Updater.check(this) { msg -> runOnUiThread { if (msg.startsWith("Sürüm ")) showUpdateDialog(msg) else Ui.toast(this, msg) } }
         })
 
         return c
@@ -260,23 +260,60 @@ class MainActivity : Activity() {
 
     private var updDialog: AlertDialog? = null
 
-    /** Açılışta yeni sürüme bakar; varsa güncellenmeden ana ekran kullanılamaz. */
-    private fun checkUpdateOnLaunch() {
-        if (!packageManager.canRequestPackageInstalls()) {
-            Ui.toast(this, "Güncellemelerin yüklenebilmesi için izin gerekiyor: \"Güncellemeleri yükleme izni ver\" düğmesine bas.")
-        }
-        Updater.check(this) { msg ->
+    /**
+     * Açılışta yeni sürüme bakar; varsa güncellenmeden ana ekran kullanılamaz.
+     * Döngü olmasın diye: aynı sürümü 15 dk içinde tekrar indirmez, pencere tek kalır,
+     * "Yükle" düğmesi Android'in onay ekranını bu ekrandan açar.
+     */
+    private fun checkUpdateOnLaunch(force: Boolean = false) {
+        if (updDialog?.isShowing == true && !force) return
+        Updater.check(this, force) { msg ->
             runOnUiThread {
-                if (isFinishing || !msg.startsWith("Sürüm ")) return@runOnUiThread
-                if (updDialog?.isShowing == true) return@runOnUiThread
-                updDialog = AlertDialog.Builder(this)
-                    .setTitle("Yeni sürüm var")
-                    .setMessage("$msg\n\nOnay ekranı çıkarsa \"Yükle\"ye bas. Güncellenmeden uygulama kullanılamaz.")
-                    .setCancelable(false)
-                    .setPositiveButton("Tekrar dene") { _, _ -> checkUpdateOnLaunch() }
-                    .show()
+                if (isFinishing || isDestroyed || !msg.startsWith("Sürüm ")) return@runOnUiThread
+                showUpdateDialog(msg)
             }
         }
+    }
+
+    private fun showUpdateDialog(msg: String) {
+        updDialog?.dismiss()
+        val izin = if (packageManager.canRequestPackageInstalls()) ""
+        else "\n\nÖnce yükleme izni lazım: \"İzin ver\"e bas, açılan ekranda Namaz'a izin ver, geri dön."
+        val hata = Updater.lastError?.let { "\n\nSon deneme: $it" } ?: ""
+        val b = AlertDialog.Builder(this)
+            .setTitle("Yeni sürüm var")
+            .setMessage("$msg$izin$hata\n\n\"Yükle\"ye bas, açılan ekranda da \"Yükle\"yi onayla. Güncellenmeden uygulama kullanılamaz.")
+            .setCancelable(false)
+            .setNegativeButton("Tekrar indir", null)
+        if (izin.isNotEmpty()) b.setNeutralButton("İzin ver", null)
+        b.setPositiveButton("Yükle", null)
+        val d = b.create()
+        d.setOnShowListener {
+            d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val ci = Updater.confirm
+                if (ci != null) {
+                    try { startActivity(ci) } catch (e: Exception) { Ui.toast(this, "Onay ekranı açılamadı: ${e.message}") }
+                } else {
+                    Ui.toast(this, "Hazırlanıyor, birkaç saniye…")
+                    d.dismiss()
+                    checkUpdateOnLaunch(force = true)
+                }
+            }
+            d.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                Ui.toast(this, "Yeniden indiriliyor…")
+                d.dismiss()
+                checkUpdateOnLaunch(force = true)
+            }
+            d.getButton(AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
+                startActivity(
+                    android.content.Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                        .setData(android.net.Uri.parse("package:$packageName")),
+                )
+                d.dismiss()
+            }
+        }
+        updDialog = d
+        d.show()
     }
 
     private fun addMed() {
