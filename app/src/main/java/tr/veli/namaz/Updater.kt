@@ -34,6 +34,7 @@ object Updater {
     /** Android'in "Yükle" onay ekranı; ön plandaki ekrandan açılır (arka plandan açılamayabiliyor) */
     @Volatile var confirm: Intent? = null
     @Volatile var lastError: String? = null
+    @Volatile var sessionId = -1
 
     /**
      * force=false: aynı sürüm son 15 dakikada indirildiyse tekrar indirmez (döngüyü önler).
@@ -46,7 +47,7 @@ object Updater {
             return
         }
         if (busy) {
-            done("Sürüm indiriliyor…")
+            done("İndirme sürüyor…")
             return
         }
         busy = true
@@ -75,9 +76,9 @@ object Updater {
                     else -> {
                         confirm = null
                         lastError = null
+                        install(c, url)
                         st.putLong("updTag", tag)
                         st.putLong("updAt", now())
-                        install(c, url)
                         st.log("Güncelleme indirildi: sürüm $tag (yüklü $cur)")
                         "Sürüm $tag hazır (yüklü: $cur)"
                     }
@@ -111,6 +112,7 @@ object Updater {
             try { pi.abandonSession(old.sessionId) } catch (_: Exception) {}
         }
         val id = pi.createSession(params)
+        sessionId = id
         pi.openSession(id).use { session ->
             val conn = URL(url).openConnection() as HttpURLConnection
             conn.instanceFollowRedirects = true
@@ -133,6 +135,9 @@ object Updater {
 class UpdateReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
         val status = i.getIntExtra(PackageInstaller.EXTRA_STATUS, -999)
+        // Terk edilen eski oturumların geri çağrısı yeni oturumun durumunu bozmasın
+        val sid = i.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
+        if (status != PackageInstaller.STATUS_SUCCESS && Updater.sessionId != -1 && sid != -1 && sid != Updater.sessionId) return
         if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
             @Suppress("DEPRECATION")
             val confirm = i.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)

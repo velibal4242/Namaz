@@ -293,8 +293,11 @@ class MainActivity : Activity() {
                 val ci = Updater.confirm
                 if (ci != null) {
                     try { startActivity(ci) } catch (e: Exception) { Ui.toast(this, "Onay ekranı açılamadı: ${e.message}") }
+                } else if (Updater.lastError == null && now() - Store.of(this).long("updAt") < 30_000) {
+                    // Onay ekranı birkaç saniye içinde hazır olur; bekleyen oturumu ezme
+                    Ui.toast(this, "Hazırlanıyor, birkaç saniye sonra tekrar bas.")
                 } else {
-                    Ui.toast(this, "Hazırlanıyor, birkaç saniye…")
+                    Ui.toast(this, "İndiriliyor…")
                     d.dismiss()
                     checkUpdateOnLaunch(force = true)
                 }
