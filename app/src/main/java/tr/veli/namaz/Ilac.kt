@@ -67,6 +67,7 @@ object Ilac {
     private fun key(m: Med, doseAt: Long) = "ilac_${dateStr(doseAt)}_${m.id}"
 
     fun taken(c: Context, m: Med, doseAt: Long) = Store.of(c).long(key(m, doseAt)) > 0
+    fun takenAt(c: Context, m: Med, doseAt: Long) = Store.of(c).long(key(m, doseAt))
 
     fun markTaken(c: Context, id: String, doseAt: Long) {
         val m = all(c).firstOrNull { it.id == id } ?: return

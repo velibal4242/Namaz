@@ -90,10 +90,18 @@ class MainActivity : Activity() {
                 now() >= at -> "⏰"
                 else -> "⏳"
             }
-            il.addView(Ui.text(this, "$mark ${m.saat}  ${m.ad} ${m.doz}", 16f))
-            dueIds[m.id]?.let { doseAt ->
-                il.addView(Ui.button(this, "✓ ${m.ad} aldım", false) {
+            val alindi = if (Ilac.taken(this, m, at)) " (${hhmm(Ilac.takenAt(this, m, at))}'de alındı)" else ""
+            il.addView(Ui.text(this, "$mark ${m.saat}  ${m.ad} ${m.doz}$alindi", 16f))
+            val doseAt = dueIds[m.id]
+            when {
+                doseAt != null -> il.addView(Ui.button(this, "✓ ${m.ad} aldım", false) {
                     Ilac.markTaken(this, m.id, doseAt)
+                    render()
+                })
+                // Saati gelmeden aldıysan: bugünkü dozu işaretle, hatırlatma gelmez
+                !Ilac.taken(this, m, at) && now() < at -> il.addView(Ui.button(this, "✓ ${m.ad} erken aldım", false) {
+                    Ilac.markTaken(this, m.id, at)
+                    Ui.toast(this, "Bugünkü ${m.saat} dozu alındı olarak işaretlendi")
                     render()
                 })
             }
