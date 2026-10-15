@@ -110,7 +110,7 @@ class UpdateReceiver : BroadcastReceiver() {
                     c, 8, confirm,
                     android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
                 )
-                val n = android.app.Notification.Builder(c, Launch.CH_TAKIP)
+                val n = android.app.Notification.Builder(c, Launch.CH_ALARM)
                     .setSmallIcon(R.drawable.ic_stat)
                     .setContentTitle("Namaz: yeni sürüm hazır")
                     .setContentText("Yüklemek için dokun")

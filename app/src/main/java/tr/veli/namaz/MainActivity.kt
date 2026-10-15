@@ -262,6 +262,9 @@ class MainActivity : Activity() {
 
     /** Açılışta yeni sürüme bakar; varsa güncellenmeden ana ekran kullanılamaz. */
     private fun checkUpdateOnLaunch() {
+        if (!packageManager.canRequestPackageInstalls()) {
+            Ui.toast(this, "Güncellemelerin yüklenebilmesi için izin gerekiyor: \"Güncellemeleri yükleme izni ver\" düğmesine bas.")
+        }
         Updater.check(this) { msg ->
             runOnUiThread {
                 if (isFinishing || !msg.startsWith("Sürüm ")) return@runOnUiThread
@@ -338,6 +341,11 @@ class MainActivity : Activity() {
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
             c.addView(Ui.button(this, "Pil kısıtlamasını kaldır") {
                 startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
+            })
+        }
+        if (!packageManager.canRequestPackageInstalls()) {
+            c.addView(Ui.button(this, "Güncellemeleri yükleme izni ver") {
+                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
             })
         }
         if (!Settings.canDrawOverlays(this)) {
