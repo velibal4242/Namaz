@@ -39,7 +39,7 @@ class MainActivity : Activity() {
         super.onResume()
         st.applyPending()
         Scheduler.scheduleNext(this)
-        Updater.maybeCheck(this)
+        checkUpdateOnLaunch()
         render()
     }
 
@@ -257,6 +257,24 @@ class MainActivity : Activity() {
     }
 
     private fun refreshLocation() = currentLocation { }
+
+    private var updDialog: AlertDialog? = null
+
+    /** Açılışta yeni sürüme bakar; varsa güncellenmeden ana ekran kullanılamaz. */
+    private fun checkUpdateOnLaunch() {
+        Updater.check(this) { msg ->
+            runOnUiThread {
+                if (isFinishing || !msg.startsWith("Sürüm ")) return@runOnUiThread
+                if (updDialog?.isShowing == true) return@runOnUiThread
+                updDialog = AlertDialog.Builder(this)
+                    .setTitle("Yeni sürüm var")
+                    .setMessage("$msg\n\nOnay ekranı çıkarsa \"Yükle\"ye bas. Güncellenmeden uygulama kullanılamaz.")
+                    .setCancelable(false)
+                    .setPositiveButton("Tekrar dene") { _, _ -> checkUpdateOnLaunch() }
+                    .show()
+            }
+        }
+    }
 
     private fun addMed() {
         input("İlacın adı", "", InputType.TYPE_CLASS_TEXT) { ad ->
