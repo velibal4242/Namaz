@@ -94,12 +94,12 @@ class ZikirActivity : Activity() {
         card.addView(hadis)
         root.addView(card)
 
-        snoozeBtn = Ui.holdButton(this, "${Zikir.ERTELEME_DK} dk ertele", seconds = 5, msg = "Zikri erteliyorsun") {
+        snoozeBtn = Ui.holdButton(this, "${Zikir.ERTELEME_DK} dk ertele", seconds = 3, msg = "Zikri erteliyorsun") {
             Zikir.snooze(this)
             exit()
         }
         root.addView(snoozeBtn)
-        root.addView(Ui.holdButton(this, "Kapat", seconds = 5, msg = "Zikri bırakıyorsun") { exit() })
+        root.addView(Ui.holdButton(this, "Kapat", seconds = 3, msg = "Zikri bırakıyorsun") { exit() })
         Ui.screen(this, root)
     }
 

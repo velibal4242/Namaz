@@ -15,7 +15,7 @@ Veli Bal için. Samsung Galaxy S26 Ultra'da test edilmek üzere.
 
 **Tek dokunuşla geçmek yok:** ertelemek için "Öğle namazımı birazdan kılacağım", kıldıysan "Öğle namazımı kıldım" cümlesini harf harf yazarsın (yapıştırma kapalı). Alarmı tamamen susturan: **"Kıldım"** ya da **camiye girmek** (8 dk kalınca camide kılındı; cuma öğlesi 35 dk). Ekrandan çıkılabilir, alarm arkada çalar.
 
-**Günlük zikir** (100'er): Tövbe → Lâ ilâhe illallâh → Salavat → Lâ havle → Tevhid. 08:00'den itibaren ekran gelir; kapatılırsa 5 dk, ertelenirse 30 dk sonra tekrar gelir (ikisi de 5 sn basılı tutarak; erteleme 21:00'e kadar). Hedef 21:30. Dokunuşlar arası bekleme yok; ses tuşlarıyla da sayılır.
+**Günlük zikir** (100'er): Tövbe → Lâ ilâhe illallâh → Salavat → Lâ havle → Tevhid. 08:00'den itibaren ekran gelir; kapatılırsa 5 dk, ertelenirse 30 dk sonra tekrar gelir (ikisi de 3 sn basılı tutarak; erteleme 21:00'e kadar). Hedef 21:30. Dokunuşlar arası bekleme yok; ses tuşlarıyla da sayılır.
 
 **İlaç takibi:** ana ekrandan ilaç, doz ve saat eklenir (bilgiler sadece telefonda). Doz saatinde sesli bildirim + "Aldım"; alınmazsa her saat tekrar (en fazla 12 saat, 00:00–07:00 sessiz).
 
