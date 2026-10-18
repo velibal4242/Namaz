@@ -24,6 +24,8 @@ import java.net.URL
  */
 object HifzAudio {
     private val h = Handler(Looper.getMainLooper())
+    /** indirme geri çağrıları için ayrı; durdur() bunları silmesin */
+    private val ih = Handler(Looper.getMainLooper())
     private var mp: MediaPlayer? = null
     @Volatile private var token = 0
     var calisiyor = false
@@ -69,7 +71,7 @@ object HifzAudio {
         }
         Thread {
             val ok = indir(ayetUrls(k, n), f)
-            h.post { cb(if (ok) f else null) }
+            ih.post { cb(if (ok) f else null) }
         }.start()
     }
 
@@ -80,7 +82,7 @@ object HifzAudio {
         Thread {
             var ok = 0
             for (n in 1..30) if (indir(ayetUrls(k, n), dosya(app, k, n))) ok++
-            h.post { bitti?.invoke(ok) }
+            ih.post { bitti?.invoke(ok) }
         }.start()
     }
 
@@ -110,6 +112,12 @@ object HifzAudio {
             )
             p.setDataSource(f.path)
             p.prepare()
+        } catch (e: Exception) {
+            f.delete() // bozuk indirme olabilir, bir dahakine yeniden insin
+            h.post { if (my == token) bitti(-1) }
+            return
+        }
+        try {
             val sure = p.duration
             p.setOnCompletionListener {
                 if (my == token) bitti(sure)
@@ -121,7 +129,6 @@ object HifzAudio {
             if (hiz != 1f) p.playbackParams = PlaybackParams().setSpeed(hiz)
             p.start()
         } catch (e: Exception) {
-            f.delete() // bozuk indirme olabilir, bir dahakine yeniden insin
             h.post { if (my == token) bitti(-1) }
         }
     }
@@ -230,12 +237,16 @@ object HifzAudio {
         val my = token
         calisiyor = true
         val app = c.applicationContext
-        HifzPlayService.baslat(app)
         fun bitir() {
             calisiyor = false
             HifzPlayService.durdur(app)
             bitti()
         }
+        if (bas > son) {
+            bitir()
+            return
+        }
+        HifzPlayService.baslat(app)
         fun adim(tur: Int, n: Int, k: Int) {
             if (my != token) return
             when {

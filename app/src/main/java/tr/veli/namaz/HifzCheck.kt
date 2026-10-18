@@ -51,6 +51,7 @@ object HifzCheck {
             if (e[i - 1].isEmpty()) best = maxOf(best, dp[i - 1][j] + 1)
             if (benzer(e[i - 1], d[j - 1])) best = maxOf(best, dp[i - 1][j - 1] + 1)
             if (j >= 2 && benzer(e[i - 1], d[j - 2] + d[j - 1])) best = maxOf(best, dp[i - 1][j - 2] + 1)
+            if (i >= 2 && e[i - 2].isNotEmpty() && benzer(e[i - 2] + e[i - 1], d[j - 1])) best = maxOf(best, dp[i - 2][j - 1] + 2)
             dp[i][j] = best
         }
         // geri izleme
@@ -67,6 +68,7 @@ object HifzCheck {
             when {
                 benzer(e[i - 1], d[j - 1]) && dp[i][j] == dp[i - 1][j - 1] + 1 -> { ok[i - 1] = true; i--; j-- }
                 j >= 2 && benzer(e[i - 1], d[j - 2] + d[j - 1]) && dp[i][j] == dp[i - 1][j - 2] + 1 -> { ok[i - 1] = true; i--; j -= 2 }
+                i >= 2 && e[i - 2].isNotEmpty() && benzer(e[i - 2] + e[i - 1], d[j - 1]) && dp[i][j] == dp[i - 2][j - 1] + 2 -> { ok[i - 1] = true; ok[i - 2] = true; i -= 2; j-- }
                 dp[i][j] == dp[i - 1][j] -> i--
                 else -> j--
             }

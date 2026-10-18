@@ -56,7 +56,7 @@ class HifzActivity : Activity() {
             HifzAudio.hepsiniIndir(this)
         }
         Hifz.schedule(this)
-        ana()
+        if (HifzAudio.calisiyor) dinle() else ana()
     }
 
     override fun onPause() {
@@ -206,7 +206,9 @@ class HifzActivity : Activity() {
     // ================================================================ ana ekran
     private fun ana() {
         HifzAudio.durdur()
+        HifzPlayService.durdur(this)
         dinlemeModu = false
+        if (Hifz.bugunBitti(this) && st.long("h_started") > 0L) Hifz.gunKontrol(this)
         val root = Ui.col(this, 18)
         root.addView(t("Mülk Sûresi", 28f, Ui.GOLD, bold = true))
         root.addView(t("Tebâreke · 30 âyet", 15f, Ui.DIM))
@@ -480,7 +482,8 @@ class HifzActivity : Activity() {
                 goster(root, "ders")
             }
             else -> {
-                val bas = maxOf(1, n - 2)
+                var bas = n
+                while (bas > maxOf(1, n - 2) && Hifz.ezber(this, bas - 1)) bas--
                 val zincir = (bas..n).map { Hifz.ayet(this, it) }
                 val kelimeler = zincir.flatMap { it.w }
                 root.addView(t("8 · Zincir: ${bas}. ayetten ${n}. ayete kadar ara vermeden sesli oku. Böylece ayetler birbirine bağlanır.", 14f, Ui.DIM))
@@ -666,7 +669,11 @@ class HifzActivity : Activity() {
     private var mealGoster = false
 
     private fun dinle(otomatik: Boolean = false) {
-        HifzAudio.durdur()
+        val calan = HifzAudio.calisiyor
+        if (!calan) {
+            HifzAudio.durdur()
+            HifzPlayService.durdur(this)
+        }
         dinlemeModu = true
         val ay = dinlemeAyar
         val root = Ui.col(this, 14)
@@ -699,7 +706,7 @@ class HifzActivity : Activity() {
                     ay.bosluk = if (i == 0) 0f else 1.1f; ayarYaz()
                 }.show()
             },
-            btn("Meal", false) { mealGoster = !mealGoster; dinle() },
+            btn("Meal", false) { HifzAudio.durdur(); mealGoster = !mealGoster; dinle() },
         ))
 
         val satirlar = mutableMapOf<Int, TextView>()
@@ -709,6 +716,8 @@ class HifzActivity : Activity() {
 
         fun baslat(bas: Int) {
             satirlar.values.forEach { it.setBackgroundColor(Color.TRANSPARENT) }
+            if (bas > ay.son) ay.son = 30
+            ayarYaz()
             HifzAudio.aralikCal(this, bas, ay.son, ay.ayetKez, ay.turKez, ay.bosluk, { n ->
                 satirlar.values.forEach { it.setBackgroundColor(Color.TRANSPARENT) }
                 satirlar[n]?.let { v ->

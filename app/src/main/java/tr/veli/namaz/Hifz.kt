@@ -103,7 +103,12 @@ object Hifz {
 
     fun ezberlendi(c: Context, n: Int) {
         val s = st(c)
-        if (!ezber(c, n)) s.putLong("h_new_${bugun()}", bugunYeni(c) + 1L)
+        if (ezber(c, n)) {
+            // zaten ezberli ayet yeniden çalışıldı: ilerlemeyi silme, başarılı tekrar say
+            degerlendir(c, n, 2)
+            return
+        }
+        s.putLong("h_new_${bugun()}", bugunYeni(c) + 1L)
         s.putLong("h_l_$n", now())
         s.putLong("h_b_$n", 0)
         s.putLong("h_d_$n", bugun() + 1)
@@ -117,11 +122,12 @@ object Hifz {
         val k = kutu(c, n)
         when (puan) {
             2 -> {
-                val nk = minOf(k + 1, ARALIK.size - 1)
+                // vadesi gelmeden yapılan tekrar kutuyu ilerletmez
+                val nk = if (vade(c, n) > bugun()) k else minOf(k + 1, ARALIK.size - 1)
                 s.putLong("h_b_$n", nk.toLong())
                 s.putLong("h_d_$n", bugun() + ARALIK[nk])
             }
-            1 -> s.putLong("h_d_$n", bugun() + maxOf(1, ARALIK[k] / 2))
+            1 -> s.putLong("h_d_$n", maxOf(minOf(vade(c, n), bugun() + ARALIK[k]), bugun() + maxOf(1, ARALIK[k] / 2)))
             else -> {
                 s.putLong("h_b_$n", 0)
                 s.putLong("h_d_$n", bugun() + 1)
@@ -131,7 +137,7 @@ object Hifz {
         gunKontrol(c)
     }
 
-    private fun gunKontrol(c: Context) {
+    fun gunKontrol(c: Context) {
         if (bugunBitti(c)) st(c).putLong("h_day_${bugun()}", 1)
         schedule(c)
     }
@@ -148,6 +154,7 @@ object Hifz {
         val s = st(c)
         for (n in 1..30) listOf("h_l_", "h_b_", "h_d_", "h_x_").forEach { s.putLong(it + n, 0) }
         s.putLong("h_new_${bugun()}", 0)
+        for (d in 0..400) s.putLong("h_day_${bugun() - d}", 0)
         s.log("Mülk ezber ilerlemesi sıfırlandı")
         schedule(c)
     }
