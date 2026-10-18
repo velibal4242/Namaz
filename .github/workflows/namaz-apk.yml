@@ -38,7 +38,7 @@ jobs:
           name: namaz-apk
           path: namaz-${{ env.VC }}.apk
       - uses: softprops/action-gh-release@v2
-        if: startsWith(github.repository, 'velibal4242/') && contains(github.repository, 'amaz')
+        if: startsWith(github.repository, 'velibal4242/') && contains(github.repository, 'amaz') && github.ref == 'refs/heads/main'
         with:
           tag_name: v${{ env.VC }}
           name: Namaz ${{ env.VC }}

@@ -130,6 +130,21 @@ class MainActivity : Activity() {
         }
         root.addView(zk)
 
+        // Mülk suresi ezberi
+        val hf = Ui.card(this)
+        hf.addView(Ui.text(this, "📖 Mülk sûresi ezberi", 18f, Ui.GOLD, bold = true))
+        val hEz = Hifz.ezberSayisi(this)
+        val hDurum = when {
+            st.long("h_started") == 0L -> "Tebâreke'yi adım adım ezberle: dinle, tekrar et, gizle, sesli kontrol."
+            Hifz.bugunBitti(this) -> "Ezber: $hEz / 30 · bugünkü ders tamam"
+            else -> "Ezber: $hEz / 30 · bugün ${Hifz.vadesiGelen(this).size} tekrar, ${Hifz.bugunkuYeniler(this).size} yeni ayet"
+        }
+        hf.addView(Ui.text(this, hDurum, 15f))
+        hf.addView(Ui.button(this, if (st.long("h_started") == 0L) "Ezbere başla" else "Ezbere devam et") {
+            startActivity(Intent(this, HifzActivity::class.java))
+        })
+        root.addView(hf)
+
         // Seri
         val seri = Ui.card(this)
         seri.addView(Ui.text(this, "Seri: ${streak()} gün", 18f, Ui.GOLD, bold = true))

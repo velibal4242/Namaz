@@ -129,6 +129,7 @@ object Scheduler {
     fun scheduleNext(ctx: Context) {
         Zikir.schedule(ctx)
         Ilac.schedule(ctx)
+        Hifz.schedule(ctx)
         val st = Store.of(ctx)
         val next = nextEvent(ctx) ?: return
         val am = ctx.getSystemService(AlarmManager::class.java)
