@@ -1,5 +1,7 @@
 EN ÖNEMLİ KURAL: Reisin kendisinin yapması gerekmeyen hiçbir işi ona yaptırma. Bir adımı vermeden önce kendi araçlarınla yapıp yapamayacağına bak ve yap; ona sadece giriş/2FA, ödeme, hesap onayı gibi gerçekten onun yapması gerekenleri bırak.
 
+DOĞA AJAN: Reisin 7/24 sunucu ajanı var (Telegram @dogaajan_reis_bot, Hetzner). Reis 'ajan' dediğinde bunu kasteder. Uzun, gece süren, ağır kod veya video işlerini ona devret; reise kopyala-yapıştır yaptırma, görevi Claude kendisi iletir. Ortak Pano: Drive > Ajan > Ortak Pano (önemli işten önce oku, sonra yeni not dosyası aç).
+
 # Namaz — proje kuralları
 
 Veli'nin kişisel Android namaz uygulaması (Samsung Galaxy S26 Ultra). Ne yaptığı README.md'de.
