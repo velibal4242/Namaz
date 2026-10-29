@@ -1,3 +1,5 @@
+EN ÖNEMLİ KURAL: Reisin kendisinin yapması gerekmeyen hiçbir işi ona yaptırma. Bir adımı vermeden önce kendi araçlarınla yapıp yapamayacağına bak ve yap; ona sadece giriş/2FA, ödeme, hesap onayı gibi gerçekten onun yapması gerekenleri bırak.
+
 # Namaz — proje kuralları
 
 Veli'nin kişisel Android namaz uygulaması (Samsung Galaxy S26 Ultra). Ne yaptığı README.md'de.
