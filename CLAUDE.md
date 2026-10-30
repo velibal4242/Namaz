@@ -1,8 +1,11 @@
-EN ÖNEMLİ KURAL: Reisin kendisinin yapması gerekmeyen hiçbir işi ona yaptırma. Bir adımı vermeden önce kendi araçlarınla yapıp yapamayacağına bak ve yap; ona sadece giriş/2FA, ödeme, hesap onayı gibi gerçekten onun yapması gerekenleri bırak.
-
-DOĞA AJAN: Reisin 7/24 sunucu ajanı var (Telegram @dogaajan_reis_bot, Hetzner). Reis 'ajan' dediğinde bunu kasteder. Uzun, gece süren, ağır kod veya video işlerini ona devret; reise kopyala-yapıştır yaptırma, görevi Claude kendisi iletir. Ortak Pano: Drive > Ajan > Ortak Pano (önemli işten önce oku, sonra yeni not dosyası aç).
-
 # Namaz — proje kuralları
+
+## Doğa Ajan ve Ortak Pano (Veli, 2026-10-29; kalıcı)
+- **En önemli kural:** Reisin kendisinin yapması gerekmeyen hiçbir işi ona yaptırma. Önce kendi araçlarınla (bağlayıcılar, bağlı bilgisayar, Chrome, sunucu, ajan) yap; ona yalnız kendi hesabıyla giriş/2FA, ödeme, "Yetkilendir" gibi hesap onayları ve yasal onaylar kalır (🔴 ile işaretle).
+- Reis "ajan" dediğinde **Doğa Ajan**'ı kasteder: 7/24 çalışan Hetzner sunucusu (Claude Code), Telegram botu @dogaajan_reis_bot. Bu sohbetleri ve hafızayı görmez; görev metnine gereken bağlamı (repo adresi, dal, kurallar) yaz.
+- Uzun, gece süren, ağır kod, toplu tasarım ya da video işlerini ajana devret. Görevi sen ilet, reise kopyala-yapıştır yaptırma; okul bilgisayarı gerekmez: **ana yol** velibal4242/doga-ajan-kopru deposunda `GOREVLER.md` sonuna `- [ ] #namaz görev metni` satırı ekle, commit + push (tek satır; devam satırları 2 boşluk girintili; yalnız dosya sonuna ekle). Ajan 2 dakikada bir alır; sonuç `SONUCLAR.md`'ye (en yeni üstte), uzun raporlar `raporlar/`a düşer. İkinci yol: bu repoda `ajan-gorev` etiketli issue (ajan 3 dakikada bir alır, `ajan-calisiyor` ekler, sonucu yorum yazıp `ajan-bitti` ile kapatır). Yedek: okul bilgisayarı açıksa Chrome'da Telegram. Görev metnine şifre/anahtar/kişisel veri yazılmaz. Görevde amaç, kurallar ve bitiş beklentisi olsun; sonucu sonraki kontrolde oku ve reise anlat. Ajanın kurulumunu reise sormadan değiştirme.
+- Ajana verilen her görevde bu repo için geçerli kurallar: main'e push yok (her push APK çıkarır, telefon kendini günceller), `app/namaz.keystore`'a dokunma yok, uyarı/alarm davranışı değiştirilmez; ayrı dal + PR ile döner. Ajanın çıktısı da bu dosyadaki bağımsız inceleme kuralından geçmeden birleştirilmez.
+- Ortak Pano: Drive > Ajan > Ortak Pano (kılavuz: Drive > Ajan > "DOĞA AJAN – KULLANIM KILAVUZU"). Önemli işten önce oradaki bütün notları oku (önce "ÖZET – …" dosyaları); önemli bir şey olunca (iş bitti, karar, onay bekleyen, başka projeyi etkileyen, ajana görev/ajandan sonuç) yeni not dosyası aç, var olanı değiştirme. Başlık "YYYY-AA-GG SS:DD · konu · tek cümle"; 1–5 satır. Kurallar: "00 – PANO KURALLARI v2". Panoya şifre, anahtar, kimlik numarası, kişisel veri yazılmaz.
 
 Veli'nin kişisel Android namaz uygulaması (Samsung Galaxy S26 Ultra). Ne yaptığı README.md'de.
 
