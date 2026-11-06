@@ -17,7 +17,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 
-/** Zikir sayacı. forced=true: zorunlu (kilit, geri gelir); false: gönüllü, istediğinde çıkarsın. */
+/** Zikir sayacı. forced=true: zorunlu (geri gelir, kilit değil); false: gönüllü, istediğinde çıkarsın. */
 class ZikirActivity : Activity() {
     private lateinit var st: Store
     private var forced = false

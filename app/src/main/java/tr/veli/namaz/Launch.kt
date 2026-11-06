@@ -53,7 +53,7 @@ object Launch {
     }
 
     /**
-     * Tek kilit ekranı. mode: nudge (10 sn, kapatılabilir), hard (1 dk, kapatılamaz),
+     * Tek namaz alarm ekranı (kilit yok). mode: nudge (10 sn, kapatılabilir), hard (1 dk, kapatılamaz),
      * final (vakit sonuna kadar, 30 sn susturma). Aynı vakitte süren kilit kısaltılmaz.
      */
     fun lock(c: Context, ev: Ev, endAt0: Long, mode: String = "hard") {

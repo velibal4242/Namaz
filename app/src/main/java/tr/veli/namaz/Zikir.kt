@@ -20,8 +20,9 @@ data class ZikirItem(
 
 /**
  * Günlük zorunlu zikir.
- *  - 18:00'de ekran gelir (kilit). 30 dk ertelenebilir; ertelemeler en geç 20:00'ye kadar.
- *  - 20:00'den sonra ertelenemez; bitene kadar ekran geri gelir. Hedef: 21:00'den önce bitmiş olmak.
+ *  - 08:00'den itibaren ekran gelir (kilit değil; kapatılırsa 5 dk sonra geri gelir).
+ *  - Erteleme 30 dk; ertelemeler en geç 21:00'e kadar (SON_ERTELEME_SAAT). Hedef: HEDEF (21:30).
+ *    Zorunlu dönemde ekrandan çıkılırsa ekran geri gelir.
  *  - İlerleme kaydedilir; gün içinde istediğin zaman ana ekrandan başlayabilirsin.
  */
 object Zikir {

@@ -34,12 +34,12 @@ class BootReceiver : BroadcastReceiver() {
         st.applyPending()
         Policy.apply(c)
         Scheduler.scheduleNext(c)
-        // Yeniden başlatıldıysa yarım kalan kilidi geri getir
+        // Yeniden başlatıldıysa yarım kalan alarmı geri getir
         val kind = st.activeKind()
         val end = st.activeEnd()
         val ev = st.activeEv()
         if (kind != null && ev != null && end > now() && st.status(ev.date, ev.vakit) == null) {
-            st.log("Yeniden başlatma: kilit geri getirildi")
+            st.log("Yeniden başlatma: alarm geri getirildi")
             Launch.lock(c, ev, end, st.str("aMode", "hard"))
         }
         // Cami takibi süren bir vakitteysek yeniden başlat

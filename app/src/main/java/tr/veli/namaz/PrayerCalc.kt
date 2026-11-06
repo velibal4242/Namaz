@@ -24,7 +24,7 @@ enum class Vakit(val ad: String, val etiket: String) {
     AKSAM("Akşam", "aksam"),
     YATSI("Yatsı", "yatsi");
 
-    /** Öğle ve ikindi camide kılınır; diğerleri ev akışıyla (NFC). */
+    /** Öğle ve ikindi camide kılınır; diğerleri evde kılınır. */
     val cami: Boolean get() = this == OGLE || this == IKINDI
 }
 
