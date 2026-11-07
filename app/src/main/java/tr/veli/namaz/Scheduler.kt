@@ -8,7 +8,7 @@ import java.util.Calendar
 
 /**
  * Bir olay.
- * type: PRE (hazırlan), ALERT (uyarı), LOCK (cami kilidi), RING (ev alarmı + NFC akışı), WATCH (cami takibi)
+ * type: PRE (hazırlan), ALERT (uyarı), LOCK (cami alarmı), RING (ev alarmı), WATCH (cami takibi)
  * dur: dakika (RING için 0 = vakit sonuna kadar; WATCH için camide kalma süresi)
  * end: vakit için kilitlerin ulaşabileceği son an
  */
@@ -152,9 +152,9 @@ object Scheduler {
         "PRE" -> "hazırlan uyarısı"
         "ALERT" -> "uyarı"
         "NUDGE" -> "10 sn hatırlatma"
-        "HARD" -> "1 dk alarm + kilit"
-        "FINAL" -> "susmayan alarm + kilit"
-        "LOCK", "RING" -> "alarm + kilit"
+        "HARD" -> "1 dk alarm"
+        "FINAL" -> "susmayan alarm"
+        "LOCK", "RING" -> "alarm"
         "WATCH" -> "cami takibi başlar"
         else -> type
     }
