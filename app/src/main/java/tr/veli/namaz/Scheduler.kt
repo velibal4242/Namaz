@@ -118,6 +118,15 @@ object Scheduler {
         return sorted
     }
 
+    fun isDogaReisInstalled(ctx: Context): Boolean {
+        return try {
+            ctx.packageManager.getPackageInfo("tr.koleji.dogareis", 0)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun nextEvent(ctx: Context): Ev? {
         val st = Store.of(ctx)
         val t = now()
@@ -127,6 +136,19 @@ object Scheduler {
     }
 
     fun scheduleNext(ctx: Context) {
+        if (isDogaReisInstalled(ctx)) {
+            val am = ctx.getSystemService(AlarmManager::class.java)
+            val pi = PendingIntent.getBroadcast(
+                ctx, 1, Intent(ctx, AlarmReceiver::class.java).setAction("tr.veli.namaz.EV"),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            am?.cancel(pi)
+            Zikir.cancel(ctx)
+            Ilac.cancel(ctx)
+            Hifz.cancel(ctx)
+            Store.of(ctx).put("nextEv", "Doğa Reis yüklü (alarmlar devredildi)")
+            return
+        }
         Zikir.schedule(ctx)
         Ilac.schedule(ctx)
         Hifz.schedule(ctx)

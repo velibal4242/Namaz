@@ -33,6 +33,7 @@
         <package android:name="com.google.android.dialer" />
         <package android:name="com.android.dialer" />
         <package android:name="com.android.server.telecom" />
+        <package android:name="tr.koleji.dogareis" />
     </queries>
 
     <application
@@ -49,6 +50,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".VeriAktarActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="tr.veli.namaz.VERI_AKTAR" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 

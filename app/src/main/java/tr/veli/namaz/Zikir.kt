@@ -114,7 +114,20 @@ object Zikir {
         return t >= startAt() && t >= snoozeUntil(c)
     }
 
+    fun cancel(c: Context) {
+        val am = c.getSystemService(AlarmManager::class.java)
+        val pi = PendingIntent.getBroadcast(
+            c, 50, Intent(c, ZikirReceiver::class.java).setAction("tr.veli.namaz.ZIKIR"),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        am?.cancel(pi)
+    }
+
     fun schedule(c: Context) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            cancel(c)
+            return
+        }
         val am = c.getSystemService(AlarmManager::class.java)
         val pi = PendingIntent.getBroadcast(
             c, 50, Intent(c, ZikirReceiver::class.java).setAction("tr.veli.namaz.ZIKIR"),
@@ -165,6 +178,10 @@ object Zikir {
 
 class ZikirReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            Zikir.cancel(c)
+            return
+        }
         if (Zikir.due(c)) Zikir.launch(c, true)
         Zikir.schedule(c)
     }

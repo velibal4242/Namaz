@@ -171,8 +171,21 @@ object Hifz {
         return cal.timeInMillis
     }
 
+    fun cancel(c: Context) {
+        val am = c.getSystemService(AlarmManager::class.java)
+        val pi = PendingIntent.getBroadcast(
+            c, 70, Intent(c, HifzReceiver::class.java).setAction("tr.veli.namaz.HIFZ"),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        am?.cancel(pi)
+    }
+
     /** Ders saatinde bir bildirim; bitmediyse 2 saat sonra bir kez daha. */
     fun schedule(c: Context) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            cancel(c)
+            return
+        }
         val am = c.getSystemService(AlarmManager::class.java)
         val pi = PendingIntent.getBroadcast(
             c, 70, Intent(c, HifzReceiver::class.java).setAction("tr.veli.namaz.HIFZ"),
@@ -221,6 +234,10 @@ object Hifz {
 
 class HifzReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            Hifz.cancel(c)
+            return
+        }
         Hifz.notify(c)
         Hifz.schedule(c)
     }

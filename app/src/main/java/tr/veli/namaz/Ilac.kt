@@ -93,7 +93,20 @@ object Ilac {
         return cal.get(Calendar.HOUR_OF_DAY) < 7
     }
 
+    fun cancel(c: Context) {
+        val am = c.getSystemService(AlarmManager::class.java)
+        val pi = PendingIntent.getBroadcast(
+            c, 60, Intent(c, IlacReceiver::class.java).setAction("tr.veli.namaz.ILAC"),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        am?.cancel(pi)
+    }
+
     fun schedule(c: Context) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            cancel(c)
+            return
+        }
         val t = now()
         val cands = mutableListOf<Long>()
         for (m in all(c)) {
@@ -174,6 +187,10 @@ object Ilac {
 
 class IlacReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (Scheduler.isDogaReisInstalled(c)) {
+            Ilac.cancel(c)
+            return
+        }
         if (i.action == "tr.veli.namaz.ILAC_ALDIM") {
             Ilac.markTaken(c, i.getStringExtra("id") ?: return, i.getLongExtra("at", 0L))
             return
