@@ -127,6 +127,7 @@ object Scheduler {
     }
 
     fun scheduleNext(ctx: Context) {
+        if (ReisHandoff.installed(ctx)) return
         Zikir.schedule(ctx)
         Ilac.schedule(ctx)
         Hifz.schedule(ctx)

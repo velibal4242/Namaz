@@ -94,6 +94,7 @@ object Ilac {
     }
 
     fun schedule(c: Context) {
+        if (ReisHandoff.installed(c)) return
         val t = now()
         val cands = mutableListOf<Long>()
         for (m in all(c)) {
@@ -133,6 +134,7 @@ object Ilac {
     fun notifId(id: String) = 5000 + ((id.removePrefix("m").toIntOrNull() ?: (id.hashCode() and 0x3FF)) % 4000) * 2
 
     fun notify(c: Context) {
+        if (ReisHandoff.installed(c)) return
         if (quiet(now())) return
         val nm = c.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(

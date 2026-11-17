@@ -173,6 +173,7 @@ object Hifz {
 
     /** Ders saatinde bir bildirim; bitmediyse 2 saat sonra bir kez daha. */
     fun schedule(c: Context) {
+        if (ReisHandoff.installed(c)) return
         val am = c.getSystemService(AlarmManager::class.java)
         val pi = PendingIntent.getBroadcast(
             c, 70, Intent(c, HifzReceiver::class.java).setAction("tr.veli.namaz.HIFZ"),
@@ -196,6 +197,7 @@ object Hifz {
     }
 
     fun notify(c: Context) {
+        if (ReisHandoff.installed(c)) return
         val nm = c.getSystemService(NotificationManager::class.java)
         if (bugunBitti(c) || ezberSayisi(c) == 0 && st(c).long("h_started") == 0L) {
             nm.cancel(7000)
