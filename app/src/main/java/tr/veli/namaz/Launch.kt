@@ -48,6 +48,7 @@ object Launch {
     }
 
     fun alert(c: Context, ev: Ev) {
+        if (ReisHandoff.installed(c)) return
         val title = if (ev.type == "PRE") "${ev.vakit.ad}'e 10 dakika — camiye hazırlan" else "${ev.vakit.ad} vakti"
         show(c, ev.into(Intent(c, AlertActivity::class.java)), title, "Namaz seni bekliyor", 10)
     }
@@ -57,6 +58,7 @@ object Launch {
      * final (vakit sonuna kadar, 30 sn susturma). Aynı vakitte süren kilit kısaltılmaz.
      */
     fun lock(c: Context, ev: Ev, endAt0: Long, mode: String = "hard") {
+        if (ReisHandoff.installed(c)) return
         val st = Store.of(c)
         if (!st.allowLaunch()) return
         var endAt = endAt0

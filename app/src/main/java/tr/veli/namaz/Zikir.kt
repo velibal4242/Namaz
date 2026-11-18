@@ -115,6 +115,7 @@ object Zikir {
     }
 
     fun schedule(c: Context) {
+        if (ReisHandoff.installed(c)) return
         val am = c.getSystemService(AlarmManager::class.java)
         val pi = PendingIntent.getBroadcast(
             c, 50, Intent(c, ZikirReceiver::class.java).setAction("tr.veli.namaz.ZIKIR"),
@@ -145,6 +146,7 @@ object Zikir {
     }
 
     fun launch(c: Context, forced: Boolean) {
+        if (ReisHandoff.installed(c)) return
         val i = Intent(c, ZikirActivity::class.java).putExtra("forced", forced)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (forced) Store.of(c).put("zForced", today())
@@ -165,6 +167,7 @@ object Zikir {
 
 class ZikirReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (ReisHandoff.installed(c)) return
         if (Zikir.due(c)) Zikir.launch(c, true)
         Zikir.schedule(c)
     }
