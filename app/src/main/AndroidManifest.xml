@@ -43,7 +43,7 @@
         android:label="Namaz"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
-        <activity android:name=".VeriAktarActivity" android:exported="true" android:noHistory="false">
+        <activity android:name=".VeriAktarActivity" android:exported="true" android:noHistory="false" android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="tr.veli.namaz.VERI_AKTAR" />
                 <category android:name="android.intent.category.DEFAULT" />
