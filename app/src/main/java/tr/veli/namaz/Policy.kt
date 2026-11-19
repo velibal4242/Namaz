@@ -34,6 +34,10 @@ object Policy {
 
     fun apply(c: Context) {
         if (!isOwner(c)) return
+        if (ReisHandoff.installed(c)) {
+            release(c)
+            return
+        }
         val d = dpm(c)
         val a = admin(c)
         val st = Store.of(c)

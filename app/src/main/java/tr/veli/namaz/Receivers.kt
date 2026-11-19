@@ -7,6 +7,7 @@ import android.content.Intent
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (ReisHandoff.installed(c)) return
         val st = Store.of(c)
         st.applyPending()
         val ev = Ev.from(i)
@@ -30,6 +31,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
+        if (ReisHandoff.installed(c)) return
         val st = Store.of(c)
         st.applyPending()
         Policy.apply(c)
