@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -16,6 +17,8 @@ import java.net.URL
  */
 object Updater {
     const val DEFAULT_REPO = "velibal4242/namaz"
+    const val DIALOG_CANCELABLE = false
+
     fun repo(c: Context) = Store.of(c).str("repo", DEFAULT_REPO).trim()
 
     fun currentVersion(c: Context): Long = c.packageManager.getPackageInfo(c.packageName, 0).longVersionCode
@@ -35,6 +38,75 @@ object Updater {
     @Volatile var confirm: Intent? = null
     @Volatile var lastError: String? = null
     @Volatile var sessionId = -1
+
+    // ------------------------------------------------------------------ birim test edilebilir mantık
+    enum class UpdateDecision {
+        NO_APK,
+        UP_TO_DATE,
+        ALREADY_DOWNLOADED,
+        DOWNLOAD_NEEDED
+    }
+
+    data class Evaluation(val decision: UpdateDecision, val message: String)
+
+    fun parseTag(tagName: String): Long =
+        tagName.trimStart('v', 'V').toLongOrNull() ?: 0L
+
+    fun parseApkUrl(assets: JSONArray): String? {
+        for (i in 0 until assets.length()) {
+            val a = assets.getJSONObject(i)
+            if (a.optString("name").endsWith(".apk")) {
+                val u = a.optString("browser_download_url")
+                if (u.isNotBlank()) return u
+            }
+        }
+        return null
+    }
+
+    fun evaluateUpdate(
+        tag: Long,
+        curVersion: Long,
+        apkUrl: String?,
+        lastTag: Long,
+        lastDownloadedAt: Long,
+        nowMs: Long,
+        force: Boolean
+    ): Evaluation {
+        return when {
+            apkUrl == null -> Evaluation(UpdateDecision.NO_APK, "Sürümde APK yok")
+            tag <= curVersion -> Evaluation(UpdateDecision.UP_TO_DATE, "Güncel (sürüm $curVersion)")
+            !force && lastTag == tag && nowMs - lastDownloadedAt < 15 * MIN ->
+                Evaluation(UpdateDecision.ALREADY_DOWNLOADED, "Sürüm $tag hazır (yüklü: $curVersion)")
+            else -> Evaluation(UpdateDecision.DOWNLOAD_NEEDED, "Sürüm $tag hazır (yüklü: $curVersion)")
+        }
+    }
+
+    /**
+     * Açılışta güncelleme zorlaması:
+     * Yeni sürüm hazırsa ("Sürüm " ile başlayan mesaj) kullanıcıya iptal edilemeyen zorlama diyaloğu açılır.
+     */
+    fun shouldPromptUpdate(msg: String): Boolean = msg.startsWith("Sürüm ")
+
+    enum class InstallAction {
+        OPEN_CONFIRM,
+        WAIT_PREPARING,
+        RETRY_DOWNLOAD
+    }
+
+    fun resolveInstallAction(confirmAvailable: Boolean, hasError: Boolean, timeSinceDownloadMs: Long): InstallAction {
+        return when {
+            confirmAvailable -> InstallAction.OPEN_CONFIRM
+            !hasError && timeSinceDownloadMs < 30_000L -> InstallAction.WAIT_PREPARING
+            else -> InstallAction.RETRY_DOWNLOAD
+        }
+    }
+
+    fun buildDialogMessage(msg: String, hasInstallPermission: Boolean, lastError: String?): String {
+        val izin = if (hasInstallPermission) ""
+        else "\n\nÖnce yükleme izni lazım: \"İzin ver\"e bas, açılan ekranda Namaz'a izin ver, geri dön."
+        val hata = lastError?.let { "\n\nSon deneme: $it" } ?: ""
+        return "$msg$izin$hata\n\n\"Yükle\"ye bas, açılan ekranda da \"Yükle\"yi onayla. Güncellenmeden uygulama kullanılamaz."
+    }
 
     /**
      * force=false: aynı sürüm son 15 dakikada indirildiyse tekrar indirmez (döngüyü önler).
@@ -56,31 +128,35 @@ object Updater {
             val msg = try {
                 val json = get("https://api.github.com/repos/$repo/releases/latest")
                 val o = JSONObject(json)
-                val tag = o.getString("tag_name").trimStart('v', 'V').toLongOrNull() ?: 0L
+                val tag = parseTag(o.getString("tag_name"))
                 val assets = o.getJSONArray("assets")
-                var url: String? = null
-                for (i in 0 until assets.length()) {
-                    val a = assets.getJSONObject(i)
-                    if (a.getString("name").endsWith(".apk")) url = a.getString("browser_download_url")
-                }
+                val url = parseApkUrl(assets)
                 val cur = currentVersion(c)
-                when {
-                    url == null -> "Sürümde APK yok"
-                    tag <= cur -> {
+                val eval = evaluateUpdate(
+                    tag = tag,
+                    curVersion = cur,
+                    apkUrl = url,
+                    lastTag = st.long("updTag"),
+                    lastDownloadedAt = st.long("updAt"),
+                    nowMs = now(),
+                    force = force
+                )
+                when (eval.decision) {
+                    UpdateDecision.NO_APK -> eval.message
+                    UpdateDecision.UP_TO_DATE -> {
                         confirm = null
                         lastError = null
-                        "Güncel (sürüm $cur)"
+                        eval.message
                     }
-                    !force && st.long("updTag") == tag && now() - st.long("updAt") < 15 * MIN ->
-                        "Sürüm $tag hazır (yüklü: $cur)"
-                    else -> {
+                    UpdateDecision.ALREADY_DOWNLOADED -> eval.message
+                    UpdateDecision.DOWNLOAD_NEEDED -> {
                         confirm = null
                         lastError = null
-                        install(c, url)
+                        install(c, url!!)
                         st.putLong("updTag", tag)
                         st.putLong("updAt", now())
                         st.log("Güncelleme indirildi: sürüm $tag (yüklü $cur)")
-                        "Sürüm $tag hazır (yüklü: $cur)"
+                        eval.message
                     }
                 }
             } catch (e: Exception) {

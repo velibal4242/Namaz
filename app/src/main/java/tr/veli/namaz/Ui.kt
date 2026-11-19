@@ -191,37 +191,4 @@ object Ui {
         addView(text(c, i.metin, 21f, TXT, center = true))
         if (i.kaynak.isNotEmpty()) addView(text(c, i.kaynak, 13f, DIM, center = true))
     }
-
-    /** Kilit ekranlarındaki "Acil durum" bölümü: Sefa'ya kod, kod girişi, arama, 112 */
-    fun emanetPanel(a: Activity, onUnlock: () -> Unit): View {
-        val wrap = col(a, 0)
-        val inner = col(a, 0).apply { visibility = View.GONE }
-        val toggle = text(a, "Acil durum ▾", 14f, DIM, center = true).apply {
-            setPadding(0, dp(a, 16), 0, dp(a, 8))
-            setOnClickListener {
-                inner.visibility = if (inner.visibility == View.GONE) View.VISIBLE else View.GONE
-            }
-        }
-        inner.addView(
-            text(a, "Sadece gerçek bir zorunluluk için. Sefa'yı ara, telefonundaki Namaz kodunu iste.", 13f, DIM, center = true),
-        )
-        inner.addView(button(a, "Sefa'ya haber ver (SMS)", false) { toast(a, Emanet.request(a)) })
-        val et = numberField(a, "6 haneli kod")
-        inner.addView(et)
-        inner.addView(button(a, "Kodu gir, kilidi aç", false) {
-            if (Emanet.check(a, et.text.toString().trim())) onUnlock()
-            else toast(a, "Kod hatalı ya da süresi dolmuş")
-        })
-        inner.addView(button(a, "Sefa'yı ara", false) {
-            Store.of(a).putLong("callUntil", now() + 5 * MIN)
-            Emanet.callSefa(a)
-        })
-        inner.addView(button(a, "112 Acil", false) {
-            Store.of(a).putLong("callUntil", now() + 10 * MIN)
-            a.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:112")))
-        })
-        wrap.addView(toggle)
-        wrap.addView(inner)
-        return wrap
-    }
 }

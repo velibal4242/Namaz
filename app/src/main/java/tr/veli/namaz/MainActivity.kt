@@ -234,7 +234,7 @@ class MainActivity : Activity() {
 
         c.addView(Ui.text(this, "Sürüm ${Updater.currentVersion(this)} · güncellemeler otomatik (6 saatte bir kontrol)", 13f, Ui.DIM))
         c.addView(Ui.button(this, "Güncellemeyi şimdi kontrol et", false) {
-            Updater.check(this) { msg -> runOnUiThread { if (msg.startsWith("Sürüm ")) showUpdateDialog(msg) else Ui.toast(this, msg) } }
+            Updater.check(this) { msg -> runOnUiThread { if (Updater.shouldPromptUpdate(msg)) showUpdateDialog(msg) else Ui.toast(this, msg) } }
         })
 
         return c
@@ -284,7 +284,7 @@ class MainActivity : Activity() {
         if (updDialog?.isShowing == true && !force) return
         Updater.check(this, force) { msg ->
             runOnUiThread {
-                if (isFinishing || isDestroyed || !msg.startsWith("Sürüm ")) return@runOnUiThread
+                if (isFinishing || isDestroyed || !Updater.shouldPromptUpdate(msg)) return@runOnUiThread
                 showUpdateDialog(msg)
             }
         }
@@ -292,29 +292,36 @@ class MainActivity : Activity() {
 
     private fun showUpdateDialog(msg: String) {
         updDialog?.dismiss()
-        val izin = if (packageManager.canRequestPackageInstalls()) ""
-        else "\n\nÖnce yükleme izni lazım: \"İzin ver\"e bas, açılan ekranda Namaz'a izin ver, geri dön."
-        val hata = Updater.lastError?.let { "\n\nSon deneme: $it" } ?: ""
+        val hasPermission = packageManager.canRequestPackageInstalls()
+        val messageText = Updater.buildDialogMessage(msg, hasPermission, Updater.lastError)
         val b = AlertDialog.Builder(this)
             .setTitle("Yeni sürüm var")
-            .setMessage("$msg$izin$hata\n\n\"Yükle\"ye bas, açılan ekranda da \"Yükle\"yi onayla. Güncellenmeden uygulama kullanılamaz.")
-            .setCancelable(false)
+            .setMessage(messageText)
+            .setCancelable(Updater.DIALOG_CANCELABLE)
             .setNegativeButton("Tekrar indir", null)
-        if (izin.isNotEmpty()) b.setNeutralButton("İzin ver", null)
+        if (!hasPermission) b.setNeutralButton("İzin ver", null)
         b.setPositiveButton("Yükle", null)
         val d = b.create()
         d.setOnShowListener {
             d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val ci = Updater.confirm
-                if (ci != null) {
-                    try { startActivity(ci) } catch (e: Exception) { Ui.toast(this, "Onay ekranı açılamadı: ${e.message}") }
-                } else if (Updater.lastError == null && now() - Store.of(this).long("updAt") < 30_000) {
-                    // Onay ekranı birkaç saniye içinde hazır olur; bekleyen oturumu ezme
-                    Ui.toast(this, "Hazırlanıyor, birkaç saniye sonra tekrar bas.")
-                } else {
-                    Ui.toast(this, "İndiriliyor…")
-                    d.dismiss()
-                    checkUpdateOnLaunch(force = true)
+                val action = Updater.resolveInstallAction(
+                    confirmAvailable = Updater.confirm != null,
+                    hasError = Updater.lastError != null,
+                    timeSinceDownloadMs = now() - Store.of(this).long("updAt")
+                )
+                when (action) {
+                    Updater.InstallAction.OPEN_CONFIRM -> {
+                        try { startActivity(Updater.confirm) } catch (e: Exception) { Ui.toast(this, "Onay ekranı açılamadı: ${e.message}") }
+                    }
+                    Updater.InstallAction.WAIT_PREPARING -> {
+                        // Onay ekranı birkaç saniye içinde hazır olur; bekleyen oturumu ezme
+                        Ui.toast(this, "Hazırlanıyor, birkaç saniye sonra tekrar bas.")
+                    }
+                    Updater.InstallAction.RETRY_DOWNLOAD -> {
+                        Ui.toast(this, "İndiriliyor…")
+                        d.dismiss()
+                        checkUpdateOnLaunch(force = true)
+                    }
                 }
             }
             d.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {

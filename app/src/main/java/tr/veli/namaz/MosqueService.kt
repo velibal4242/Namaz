@@ -45,7 +45,7 @@ class MosqueService : Service(), LocationListener {
         ev = e
         startForeground(
             2,
-            note("${e.vakit.ad}: cami takibi açık", "Camiye girdiğinde kilit kalkar."),
+            note("${e.vakit.ad}: cami takibi açık", "Camiye girdiğinde alarm susar."),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
         )
         val lm = getSystemService(LocationManager::class.java)
@@ -94,7 +94,7 @@ class MosqueService : Service(), LocationListener {
         if (first) {
             sendBroadcast(Intent(ARRIVED).setPackage(packageName))
             getSystemService(NotificationManager::class.java)
-                .notify(2, note("${near.first.ad} — hoş geldin", "Kilit kalktı. ${e.dur} dk sonra kılındı sayılır."))
+                .notify(2, note("${near.first.ad} — hoş geldin", "Alarm susturuldu. ${e.dur} dk sonra kılındı sayılır."))
         }
         val entry = e.at + 15 * MIN // WATCH vakitten 15 dk önce başlar
         if (t >= entry && t - maxOf(insideSince, entry) >= e.dur * MIN) {
